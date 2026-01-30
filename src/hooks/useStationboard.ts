@@ -3,6 +3,7 @@ import { useQuery } from "@tanstack/react-query";
 interface Stop {
   departure: string;
   delay: number | null;
+  platform: string | null;
 }
 
 interface Connection {
@@ -23,8 +24,8 @@ interface StationboardResponse {
 
 const fetchStationboard = async (): Promise<Connection[]> => {
   const params = new URLSearchParams({
-    station: "Killwangen",
-    limit: "15", // Fetch more to filter
+    station: "Killwangen-Spreitenbach",
+    limit: "15",
   });
 
   const response = await fetch(
@@ -37,23 +38,16 @@ const fetchStationboard = async (): Promise<Connection[]> => {
 
   const data: StationboardResponse = await response.json();
 
-  // Filter for connections going to Zürich Hardbrücke and take first 5
-  const filtered = data.stationboard
-    .filter((connection) =>
-      connection.to.toLowerCase().includes("hardbrücke") ||
-      connection.to.toLowerCase().includes("hardbrucke")
-    )
-    .slice(0, 5);
-
-  return filtered;
+  // Take first 5 departures (all go towards Zürich from this station)
+  return data.stationboard.slice(0, 5);
 };
 
 export const useStationboard = () => {
   return useQuery({
-    queryKey: ["stationboard", "killwangen"],
+    queryKey: ["stationboard", "killwangen-spreitenbach"],
     queryFn: fetchStationboard,
-    refetchInterval: 30000, // Refresh every 30 seconds
-    staleTime: 10000, // Consider data stale after 10 seconds
+    refetchInterval: 30000,
+    staleTime: 10000,
   });
 };
 
@@ -61,7 +55,6 @@ export const calculateMinutesUntilDeparture = (departureTime: string, delay: num
   const departure = new Date(departureTime);
   const now = new Date();
   
-  // Add delay if present
   if (delay) {
     departure.setMinutes(departure.getMinutes() + delay);
   }
