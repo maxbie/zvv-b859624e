@@ -73,7 +73,7 @@ export const DepartureDisplay = () => {
       {/* Header */}
       <div className="px-[2vw] py-[2vh] border-b border-amber-900/30">
         <h1 className="text-led-amber font-led text-[4vw] md:text-[3vw] lg:text-[2.5vw]">
-          Fellenbergstrasse
+          Killwangen
         </h1>
         <p className="text-led-amber-dim font-led text-[2vw] md:text-[1.5vw] lg:text-[1vw] mt-[0.5vh]">
           {currentTime.toLocaleTimeString("de-CH", {
@@ -94,8 +94,8 @@ export const DepartureDisplay = () => {
           return (
             <DepartureRow
               key={`${departure.stop.departure}-${index}`}
-              lineNumber={departure.number}
-              destination="Klusplatz"
+              lineNumber={departure.category === "S" ? `S${departure.number}` : departure.number}
+              destination="Hardbrücke"
               minutes={minutes}
             />
           );
