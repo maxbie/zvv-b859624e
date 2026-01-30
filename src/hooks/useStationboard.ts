@@ -23,9 +23,8 @@ interface StationboardResponse {
 
 const fetchStationboard = async (): Promise<Connection[]> => {
   const params = new URLSearchParams({
-    station: "Fellenbergstrasse",
+    station: "Killwangen",
     limit: "15", // Fetch more to filter
-    transportations: "tram",
   });
 
   const response = await fetch(
@@ -38,12 +37,11 @@ const fetchStationboard = async (): Promise<Connection[]> => {
 
   const data: StationboardResponse = await response.json();
 
-  // Filter for line 3 going to Klusplatz and take first 5
+  // Filter for connections going to Zürich Hardbrücke and take first 5
   const filtered = data.stationboard
-    .filter(
-      (connection) =>
-        connection.number === "3" &&
-        connection.to.toLowerCase().includes("klusplatz")
+    .filter((connection) =>
+      connection.to.toLowerCase().includes("hardbrücke") ||
+      connection.to.toLowerCase().includes("hardbrucke")
     )
     .slice(0, 5);
 
@@ -52,7 +50,7 @@ const fetchStationboard = async (): Promise<Connection[]> => {
 
 export const useStationboard = () => {
   return useQuery({
-    queryKey: ["stationboard", "fellenbergstrasse"],
+    queryKey: ["stationboard", "killwangen"],
     queryFn: fetchStationboard,
     refetchInterval: 30000, // Refresh every 30 seconds
     staleTime: 10000, // Consider data stale after 10 seconds
