@@ -4,21 +4,30 @@ import { useEffect, useState } from "react";
 const DepartureRow = ({
   lineNumber,
   destination,
+  platform,
   minutes,
 }: {
   lineNumber: string;
   destination: string;
+  platform: string | null;
   minutes: number;
 }) => {
   return (
-    <div className="flex items-center justify-between w-full px-[2vw] py-[1vh]">
+    <div className="flex items-center justify-between w-full px-[2vw] py-[1.5vh]">
       <div className="flex items-center gap-[2vw]">
-        <span className="text-led-amber font-led text-[6vw] md:text-[5vw] lg:text-[4vw] font-bold min-w-[8vw]">
+        <span className="text-led-amber font-led text-[6vw] md:text-[5vw] lg:text-[4vw] font-bold min-w-[10vw]">
           {lineNumber}
         </span>
-        <span className="text-led-amber font-led text-[5vw] md:text-[4vw] lg:text-[3.5vw]">
-          {destination}
-        </span>
+        <div className="flex flex-col">
+          <span className="text-led-amber font-led text-[4vw] md:text-[3.5vw] lg:text-[3vw]">
+            {destination}
+          </span>
+          {platform && (
+            <span className="text-led-amber-dim font-led text-[2vw] md:text-[1.5vw] lg:text-[1.2vw]">
+              Gleis {platform}
+            </span>
+          )}
+        </div>
       </div>
       <span className="text-led-amber font-led text-[6vw] md:text-[5vw] lg:text-[4vw] font-bold">
         {minutes}'
@@ -73,7 +82,7 @@ export const DepartureDisplay = () => {
       {/* Header */}
       <div className="px-[2vw] py-[2vh] border-b border-amber-900/30">
         <h1 className="text-led-amber font-led text-[4vw] md:text-[3vw] lg:text-[2.5vw]">
-          Killwangen
+          Killwangen-Spreitenbach
         </h1>
         <p className="text-led-amber-dim font-led text-[2vw] md:text-[1.5vw] lg:text-[1vw] mt-[0.5vh]">
           {currentTime.toLocaleTimeString("de-CH", {
@@ -91,11 +100,17 @@ export const DepartureDisplay = () => {
             departure.stop.delay
           );
 
+          // Format line number: S5, S11, etc.
+          const lineNumber = departure.category === "S" 
+            ? `S${departure.number}` 
+            : `${departure.category}${departure.number}`;
+
           return (
             <DepartureRow
               key={`${departure.stop.departure}-${index}`}
-              lineNumber={departure.category === "S" ? `S${departure.number}` : departure.number}
-              destination="Hardbrücke"
+              lineNumber={lineNumber}
+              destination={departure.to}
+              platform={departure.stop.platform}
               minutes={minutes}
             />
           );
