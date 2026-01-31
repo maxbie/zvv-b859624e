@@ -48,9 +48,9 @@ const DepartureRow = ({
         {destination.replace(/ Nord$/, "")}
       </span>
     </div>
-    <div className="text-led-amber font-led text-[10vw] md:text-[8vw] lg:text-[6vw] font-bold min-w-[12vw] text-right">
-      {minutes === 0 ? <span>☺</span> : <span>{minutes}'</span>}
-    </div>
+    <span className="text-led-amber font-led text-[10vw] md:text-[8vw] lg:text-[6vw] font-bold min-w-[12vw] text-right">
+      {minutes === 0 ? "☺" : `${minutes}'`}
+    </span>
   </div>
 );
 
