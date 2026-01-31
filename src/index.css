@@ -118,10 +118,6 @@ All colors MUST be HSL.
 
 .text-led-amber {
   color: hsl(var(--led-amber));
-  text-shadow: 
-    0 0 10px hsl(var(--led-amber) / 0.8),
-    0 0 20px hsl(var(--led-amber) / 0.6),
-    0 0 30px hsl(var(--led-amber) / 0.4);
 }
 
 .text-led-amber-dim {
