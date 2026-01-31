@@ -1,74 +1,50 @@
 
 
-# Smiley statt Bus/Tram Icons
+# Zwei kleine Anpassungen
 
-Ersetzt die Lucide-Icons durch das Unicode-Smiley-Zeichen aus der Nose Transport Font.
-
----
-
-## Aktuelle Situation
-
-Bei Abfahrten in 0 Minuten werden aktuell unterschiedliche Lucide-Icons angezeigt:
-- **Tram**: `TramFront` Icon
-- **Bus**: `Bus` Icon
-
-Diese Icons sind SVG-basiert und passen nicht zum Dot-Matrix-Look der Nose Transport Font.
+Basierend auf dem genehmigten Plan, hier die zwei zusätzlichen Änderungen.
 
 ---
 
-## Geplante Änderung
+## Änderung 1: Datum und Uhrzeit nebeneinander
 
-### src/components/DepartureDisplay.tsx
+### Aktuell (Zeile 24)
+```tsx
+return `${day}.${month}.${year}    ${time}`;
+```
+Das Format ist bereits nebeneinander mit Leerzeichen dazwischen. Das Problem ist wahrscheinlich, dass es auf kleinen Bildschirmen umbricht.
 
-**Entfernen:**
-- Import von `TramFront` und `Bus` aus `lucide-react`
-- Unterscheidung zwischen Tram und Bus (wird nicht mehr benötigt)
-
-**Ändern:**
-Die gesamte Icon-Logik wird durch ein einfaches Unicode-Zeichen ersetzt:
+### Lösung
+Die `DateTimeDisplay` Komponente bekommt `whitespace-nowrap`, damit Datum und Zeit immer auf einer Zeile bleiben:
 
 ```tsx
-// Vorher (Zeilen 58-66):
-{minutes === 0 ? (
-  isTram ? (
-    <TramFront className="..." />
-  ) : (
-    <Bus className="..." />
-  )
-) : (
-  <span>{minutes}'</span>
-)}
-
-// Nachher:
-{minutes === 0 ? (
-  <span>☺</span>  // U+263A - White Smiling Face
-) : (
-  <span>{minutes}'</span>
-)}
+<div className="absolute top-[2vh] right-[2vw] text-led-amber-dim font-led text-[2.5vw] md:text-[2vw] lg:text-[1.5vw] whitespace-nowrap">
 ```
 
-**Vereinfachungen:**
-- Die `isTram` Variable wird nicht mehr benötigt
-- Der `category` Parameter kann aus `DepartureRow` entfernt werden
-- Kein Lucide-Import mehr nötig
+---
+
+## Änderung 2: " Nord" aus Ziel entfernen
+
+### Aktuell
+Das Ziel "Zürich Oerlikon, Bahnhof Nord" wird direkt aus der API übernommen.
+
+### Lösung
+In der `DepartureRow` Komponente wird " Nord" aus dem Zieltext entfernt:
+
+```tsx
+<span className="text-led-amber font-led ...">
+  {destination.replace(/, Bahnhof Nord$/, "")}
+</span>
+```
+
+Dies entfernt ", Bahnhof Nord" am Ende des Ziels, sodass nur "Zürich Oerlikon" angezeigt wird.
 
 ---
 
-## Vorteile
+## Zusammenfassung
 
-| Aspekt | Vorher | Nachher |
-|--------|--------|---------|
-| **Konsistenz** | SVG-Icons | Nativer Font-Glyph |
-| **Dot-Matrix-Look** | Fremd | Authentisch |
-| **Responsiveness** | Manuelle Grössenanpassung | Skaliert mit Font |
-| **Code** | Komplexe Logik | Einfaches Zeichen |
-
----
-
-## Technische Details
-
-- **Unicode**: U+263A (☺) - "White Smiling Face"
-- Der Glyph wird automatisch in der Nose Transport Font im Dot-Matrix-Stil dargestellt
-- Die Schriftgrösse skaliert bereits responsiv mit den Viewport-Units (`vw`)
-- Keine zusätzlichen CSS-Anpassungen nötig
+| Änderung | Zeile | Was |
+|----------|-------|-----|
+| Whitespace nowrap | 28 | `whitespace-nowrap` zur CSS-Klasse hinzufügen |
+| " Nord" entfernen | 48 | `.replace(/, Bahnhof Nord$/, "")` auf destination |
 
