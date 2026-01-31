@@ -2,7 +2,7 @@ import { DepartureDisplay } from "@/components/DepartureDisplay";
 
 const Index = () => {
   return (
-    <div className="min-h-screen w-full bg-led flex flex-col">
+    <div className="h-screen w-full bg-led flex flex-col overflow-hidden">
       <DepartureDisplay />
     </div>
   );
