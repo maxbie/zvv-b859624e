@@ -21,7 +21,7 @@ const formatDateTime = (date: Date): string => {
     hour: "2-digit",
     minute: "2-digit",
   });
-  return `${day}.${month}.${year}    ${time}`;
+  return `${day}.${month}.${year}   ${time}`;
 };
 
 const DateTimeDisplay = ({ currentTime }: { currentTime: Date }) => (
@@ -39,7 +39,7 @@ const DepartureRow = ({
   destination: string;
   minutes: number;
 }) => (
-  <div className="flex items-center justify-between w-full px-[2vw] py-[1vh]">
+  <div className="flex items-center justify-between w-full px-[2vw]">
     <div className="flex items-center gap-[2vw]">
       <span className="text-led-amber font-led text-[10vw] md:text-[8vw] lg:text-[6vw] font-bold min-w-[12vw]">
         {lineNumber}
@@ -122,8 +122,8 @@ export const DepartureDisplay = () => {
             </span>
           </div>
         ) : (
-          <div className="flex flex-col justify-start">
-            {allDepartures.map((departure, index) => (
+          <div className="flex flex-col justify-between h-full">
+            {allDepartures.slice(0, 5).map((departure, index) => (
               <DepartureRow
                 key={`${departure.stop.departure}-${index}`}
                 lineNumber={departure.number}
