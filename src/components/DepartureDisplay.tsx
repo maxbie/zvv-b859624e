@@ -1,5 +1,5 @@
 import { useFellenbergstrasse, useAlbisriederDoerfli, calculateMinutesUntilDeparture } from "@/hooks/useStationboard";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
 
 interface Connection {
   stop: {
@@ -25,7 +25,7 @@ const formatDateTime = (date: Date): string => {
 };
 
 const DateTimeDisplay = ({ currentTime }: { currentTime: Date }) => (
-  <div className="absolute top-[2vh] right-[2vw] text-led-amber-dim font-led text-[2.5vw] md:text-[2vw] lg:text-[1.5vw] whitespace-nowrap">
+  <div className="absolute top-[2vh] right-[2vw] text-led-amber-dim font-led text-[5vw] md:text-[4vw] lg:text-[3vw] whitespace-nowrap">
     {formatDateTime(currentTime)}
   </div>
 );
@@ -41,104 +41,18 @@ const DepartureRow = ({
 }) => (
   <div className="flex items-center justify-between w-full px-[2vw] py-[1vh]">
     <div className="flex items-center gap-[2vw]">
-      <span className="text-led-amber font-led text-[5vw] md:text-[4vw] lg:text-[3vw] font-bold min-w-[8vw]">
+      <span className="text-led-amber font-led text-[10vw] md:text-[8vw] lg:text-[6vw] font-bold min-w-[12vw]">
         {lineNumber}
       </span>
-      <span className="text-led-amber font-led text-[3.5vw] md:text-[3vw] lg:text-[2.5vw]">
-        {destination.replace(/, Bahnhof Nord$/, "")}
+      <span className="text-led-amber font-led text-[7vw] md:text-[6vw] lg:text-[5vw]">
+        {destination.replace(/ Nord$/, "")}
       </span>
     </div>
-    <div className="text-led-amber font-led text-[5vw] md:text-[4vw] lg:text-[3vw] font-bold min-w-[8vw] text-right">
+    <div className="text-led-amber font-led text-[10vw] md:text-[8vw] lg:text-[6vw] font-bold min-w-[12vw] text-right">
       {minutes === 0 ? <span>☺</span> : <span>{minutes}'</span>}
     </div>
   </div>
 );
-
-const StationSection = ({
-  stationName,
-  departures,
-  isLoading,
-  isError,
-}: {
-  stationName: string;
-  departures: Connection[] | undefined;
-  isLoading: boolean;
-  isError: boolean;
-}) => {
-  if (isLoading) {
-    return (
-      <div className="flex-1 flex flex-col px-[2vw] py-[2vh]">
-        <h2 className="text-led-amber font-led text-[3.5vw] md:text-[3vw] lg:text-[2.5vw] mb-[1vh]">
-          {stationName}
-        </h2>
-        <div className="border-b border-amber-900/30 mb-[1vh]" />
-        <div className="flex-1 flex items-center justify-center">
-          <span className="text-led-amber font-led text-[3vw] animate-pulse">
-            Lade Daten...
-          </span>
-        </div>
-      </div>
-    );
-  }
-
-  if (isError) {
-    return (
-      <div className="flex-1 flex flex-col px-[2vw] py-[2vh]">
-        <h2 className="text-led-amber font-led text-[3.5vw] md:text-[3vw] lg:text-[2.5vw] mb-[1vh]">
-          {stationName}
-        </h2>
-        <div className="border-b border-amber-900/30 mb-[1vh]" />
-        <div className="flex-1 flex items-center justify-center">
-          <span className="text-led-amber-dim font-led text-[2.5vw]">
-            Verbindung fehlgeschlagen
-          </span>
-        </div>
-      </div>
-    );
-  }
-
-  if (!departures || departures.length === 0) {
-    return (
-      <div className="flex-1 flex flex-col px-[2vw] py-[2vh]">
-        <h2 className="text-led-amber font-led text-[3.5vw] md:text-[3vw] lg:text-[2.5vw] mb-[1vh]">
-          {stationName}
-        </h2>
-        <div className="border-b border-amber-900/30 mb-[1vh]" />
-        <div className="flex-1 flex items-center justify-center">
-          <span className="text-led-amber-dim font-led text-[2.5vw]">
-            Keine Abfahrten
-          </span>
-        </div>
-      </div>
-    );
-  }
-
-  return (
-    <div className="flex-1 flex flex-col px-[2vw] py-[2vh]">
-      <h2 className="text-led-amber font-led text-[3.5vw] md:text-[3vw] lg:text-[2.5vw] mb-[1vh]">
-        {stationName}
-      </h2>
-      <div className="border-b border-amber-900/30 mb-[1vh]" />
-      <div className="flex flex-col justify-start">
-        {departures.map((departure, index) => {
-          const minutes = calculateMinutesUntilDeparture(
-            departure.stop.departure,
-            departure.stop.delay
-          );
-
-          return (
-            <DepartureRow
-              key={`${departure.stop.departure}-${index}`}
-              lineNumber={departure.number}
-              destination={departure.to}
-              minutes={minutes}
-            />
-          );
-        })}
-      </div>
-    </div>
-  );
-};
 
 export const DepartureDisplay = () => {
   const fellenbergstrasse = useFellenbergstrasse();
@@ -154,29 +68,72 @@ export const DepartureDisplay = () => {
     return () => clearInterval(interval);
   }, []);
 
+  // Combine and sort all departures by minutes until departure
+  const allDepartures = useMemo(() => {
+    const departures: Array<Connection & { minutes: number }> = [];
+
+    if (fellenbergstrasse.data) {
+      fellenbergstrasse.data.forEach((dep) => {
+        departures.push({
+          ...dep,
+          minutes: calculateMinutesUntilDeparture(dep.stop.departure, dep.stop.delay),
+        });
+      });
+    }
+
+    if (albisriederDoerfli.data) {
+      albisriederDoerfli.data.forEach((dep) => {
+        departures.push({
+          ...dep,
+          minutes: calculateMinutesUntilDeparture(dep.stop.departure, dep.stop.delay),
+        });
+      });
+    }
+
+    return departures.sort((a, b) => a.minutes - b.minutes);
+  }, [fellenbergstrasse.data, albisriederDoerfli.data, currentTime]);
+
+  const isLoading = fellenbergstrasse.isLoading || albisriederDoerfli.isLoading;
+  const isError = fellenbergstrasse.isError && albisriederDoerfli.isError;
+
   return (
     <div className="relative flex flex-col w-full h-full">
       {/* Date/Time Display */}
       <DateTimeDisplay currentTime={currentTime} />
 
-      {/* Fellenbergstrasse Section */}
-      <StationSection
-        stationName="Fellenbergstrasse"
-        departures={fellenbergstrasse.data}
-        isLoading={fellenbergstrasse.isLoading}
-        isError={fellenbergstrasse.isError}
-      />
-
-      {/* Divider */}
-      <div className="border-t border-amber-900/50 mx-[2vw]" />
-
-      {/* Albisriederdörfli Section */}
-      <StationSection
-        stationName="Albisriederdörfli"
-        departures={albisriederDoerfli.data}
-        isLoading={albisriederDoerfli.isLoading}
-        isError={albisriederDoerfli.isError}
-      />
+      {/* Departures List */}
+      <div className="flex-1 flex flex-col px-[2vw] py-[8vh]">
+        {isLoading ? (
+          <div className="flex-1 flex items-center justify-center">
+            <span className="text-led-amber font-led text-[6vw] animate-pulse">
+              Lade Daten...
+            </span>
+          </div>
+        ) : isError ? (
+          <div className="flex-1 flex items-center justify-center">
+            <span className="text-led-amber-dim font-led text-[5vw]">
+              Verbindung fehlgeschlagen
+            </span>
+          </div>
+        ) : allDepartures.length === 0 ? (
+          <div className="flex-1 flex items-center justify-center">
+            <span className="text-led-amber-dim font-led text-[5vw]">
+              Keine Abfahrten
+            </span>
+          </div>
+        ) : (
+          <div className="flex flex-col justify-start">
+            {allDepartures.map((departure, index) => (
+              <DepartureRow
+                key={`${departure.stop.departure}-${index}`}
+                lineNumber={departure.number}
+                destination={departure.to}
+                minutes={departure.minutes}
+              />
+            ))}
+          </div>
+        )}
+      </div>
     </div>
   );
 };
