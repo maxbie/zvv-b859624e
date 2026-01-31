@@ -1,68 +1,31 @@
 
-# Drei Anpassungen für die Abfahrtsanzeige
+# Scrollbar-Problem beheben
 
----
+## Ursache
 
-## Änderung 1: 3 Leerschläge zwischen Datum und Uhrzeit
+Das Problem entsteht durch zwei Faktoren:
 
-### Aktuell (Zeile 24)
-```tsx
-return `${day}.${month}.${year}    ${time}`;
-```
-Das sind aktuell 4 Leerzeichen.
+1. **Index.tsx (Zeile 5)**: Der Container nutzt `min-h-screen` statt `h-screen`
+   - `min-h-screen` = *mindestens* 100vh (kann grösser werden)
+   - `h-screen` = *genau* 100vh (feste Höhe)
 
-### Neu
-```tsx
-return `${day}.${month}.${year}   ${time}`;
-```
-Genau 3 Leerzeichen zwischen Datum und Uhrzeit.
+2. **Fehlendes `overflow-hidden`**: Ohne diese Eigenschaft wird der überlaufende Inhalt scrollbar gemacht
 
----
+## Lösung
 
-## Änderung 2: Dynamischer Zeilenabstand für 4:3-Format
+### Datei: `src/pages/Index.tsx`
 
-### Aktuell (Zeile 42)
-```tsx
-<div className="flex items-center justify-between w-full px-[2vw] py-[1vh]">
-```
-Fester Zeilenabstand von `1vh`.
+```text
+Aktuell:
+<div className="min-h-screen w-full bg-led flex flex-col">
 
-### Neu
-Für ein 4:3-Format mit 5 Einträgen nutzen wir `justify-between` auf dem Container, damit die Zeilen gleichmässig über die verfügbare Höhe verteilt werden:
-
-```tsx
-// Container (Zeile 125)
-<div className="flex flex-col justify-between h-full">
-
-// DepartureRow (Zeile 42)
-<div className="flex items-center justify-between w-full px-[2vw]">
+Neu:
+<div className="h-screen w-full bg-led flex flex-col overflow-hidden">
 ```
 
-So wird der vertikale Abstand automatisch berechnet und die 5 Zeilen füllen den verfügbaren Platz optimal aus.
+| Änderung | Effekt |
+|----------|--------|
+| `min-h-screen` → `h-screen` | Feste Höhe von genau 100vh |
+| `+ overflow-hidden` | Versteckt überlaufenden Inhalt und entfernt Scrollbar |
 
----
-
-## Änderung 3: Nur 5 Einträge anzeigen
-
-### Aktuell (Zeile 126)
-```tsx
-{allDepartures.map((departure, index) => (
-```
-Zeigt alle Abfahrten an (bis zu 6).
-
-### Neu
-```tsx
-{allDepartures.slice(0, 5).map((departure, index) => (
-```
-Begrenzt auf die ersten 5 Einträge.
-
----
-
-## Zusammenfassung der Code-Änderungen
-
-| Zeile | Was | Änderung |
-|-------|-----|----------|
-| 24 | formatDateTime | 4 → 3 Leerzeichen |
-| 42 | DepartureRow | `py-[1vh]` entfernen |
-| 125 | Container | `justify-between h-full` hinzufügen |
-| 126 | map | `.slice(0, 5)` hinzufügen |
+Dies stellt sicher, dass der gesamte Inhalt innerhalb des Viewports bleibt und kein Scrollen möglich ist - ideal für eine Fullscreen-Anzeige im 4:3-Format.
