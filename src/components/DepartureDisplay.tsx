@@ -122,7 +122,7 @@ export const DepartureDisplay = () => {
             </span>
           </div>
         ) : (
-          <div className="flex flex-col justify-between h-full">
+          <div className="flex flex-col justify-between h-[80%]">
             {allDepartures.slice(0, 5).map((departure, index) => (
               <DepartureRow
                 key={`${departure.stop.departure}-${index}`}
