@@ -17,7 +17,7 @@ All colors MUST be HSL.
 @layer base {
   :root {
     /* LED Display Colors */
-    --led-background: 0 0% 0%;
+    --led-background: 0 0% 11%;
     --led-amber: 45 100% 50%;
     --led-amber-dim: 45 80% 30%;
     --led-amber-glow: 45 100% 60%;
