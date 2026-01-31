@@ -103,7 +103,7 @@ export const DepartureDisplay = () => {
   const isError = fellenbergstrasse.isError && albisriederDoerfli.isError;
 
   return (
-    <div className="relative flex flex-col w-full h-full">
+    <div className="relative flex flex-col w-full h-full overflow-hidden">
       {/* Refresh Info */}
       <RefreshInfo />
 
@@ -131,7 +131,7 @@ export const DepartureDisplay = () => {
             </span>
           </div>
         ) : (
-          <div className="flex flex-col justify-between h-[80%]">
+          <div className="flex flex-col justify-between h-[64%]">
             {allDepartures.slice(0, 5).map((departure, index) => (
               <DepartureRow
                 key={`${departure.stop.departure}-${index}`}
