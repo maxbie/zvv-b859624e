@@ -25,7 +25,7 @@ const formatDateTime = (date: Date): string => {
 };
 
 const DateTimeDisplay = ({ currentTime }: { currentTime: Date }) => (
-  <div className="absolute top-[2vh] right-[2vw] text-led-amber-dim font-led text-[2.5vw] md:text-[2vw] lg:text-[1.5vw]">
+  <div className="absolute top-[2vh] right-[2vw] text-led-amber-dim font-led text-[2.5vw] md:text-[2vw] lg:text-[1.5vw] whitespace-nowrap">
     {formatDateTime(currentTime)}
   </div>
 );
@@ -45,7 +45,7 @@ const DepartureRow = ({
         {lineNumber}
       </span>
       <span className="text-led-amber font-led text-[3.5vw] md:text-[3vw] lg:text-[2.5vw]">
-        {destination}
+        {destination.replace(/, Bahnhof Nord$/, "")}
       </span>
     </div>
     <div className="text-led-amber font-led text-[5vw] md:text-[4vw] lg:text-[3vw] font-bold min-w-[8vw] text-right">
