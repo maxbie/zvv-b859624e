@@ -2,8 +2,8 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Import digital font for LED display */
-@import url('https://fonts.googleapis.com/css2?family=Share+Tech+Mono&display=swap');
+/* Import LED Dot-Matrix font for authentic display look */
+@import url('https://fonts.cdnfonts.com/css/led-dot-matrix');
 
 /* Definition of the design system. All colors, gradients, fonts, etc should be defined here. 
 All colors MUST be HSL.
@@ -108,7 +108,7 @@ All colors MUST be HSL.
 
 /* LED Display specific styles */
 .font-led {
-  font-family: 'Share Tech Mono', monospace;
+  font-family: 'LED Dot-Matrix', 'Share Tech Mono', monospace;
 }
 
 .text-led-amber {

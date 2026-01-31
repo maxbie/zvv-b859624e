@@ -22,10 +22,15 @@ interface StationboardResponse {
   stationboard: Connection[];
 }
 
-const fetchStationboard = async (): Promise<Connection[]> => {
+const fetchStationboardFiltered = async (
+  station: string,
+  filterNumber: string,
+  filterDirection: string,
+  limit: number
+): Promise<Connection[]> => {
   const params = new URLSearchParams({
-    station: "Killwangen-Spreitenbach",
-    limit: "15",
+    station: station,
+    limit: "20", // Fetch more to filter
   });
 
   const response = await fetch(
@@ -38,14 +43,41 @@ const fetchStationboard = async (): Promise<Connection[]> => {
 
   const data: StationboardResponse = await response.json();
 
-  // Take first 5 departures (all go towards Zürich from this station)
-  return data.stationboard.slice(0, 5);
+  // Filter by line number and direction
+  const filtered = data.stationboard.filter((connection) => {
+    const matchesNumber = connection.number === filterNumber;
+    const matchesDirection = connection.to.toLowerCase().includes(filterDirection.toLowerCase());
+    return matchesNumber && matchesDirection;
+  });
+
+  return filtered.slice(0, limit);
 };
 
-export const useStationboard = () => {
+// Hook für Fellenbergstrasse (Tram 3 -> Klusplatz)
+export const useFellenbergstrasse = () => {
   return useQuery({
-    queryKey: ["stationboard", "killwangen-spreitenbach"],
-    queryFn: fetchStationboard,
+    queryKey: ["stationboard", "fellenbergstrasse", "3", "klusplatz"],
+    queryFn: () => fetchStationboardFiltered(
+      "Zürich, Fellenbergstrasse",
+      "3",
+      "Klusplatz",
+      3
+    ),
+    refetchInterval: 30000,
+    staleTime: 10000,
+  });
+};
+
+// Hook für Albisriederdörfli (Bus 80 -> Oerlikon)
+export const useAlbisriederDoerfli = () => {
+  return useQuery({
+    queryKey: ["stationboard", "albisriederDoerfli", "80", "oerlikon"],
+    queryFn: () => fetchStationboardFiltered(
+      "Zürich, Albisriederdörfli",
+      "80",
+      "Oerlikon",
+      3
+    ),
     refetchInterval: 30000,
     staleTime: 10000,
   });

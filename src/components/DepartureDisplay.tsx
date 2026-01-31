@@ -1,67 +1,164 @@
-import { useStationboard, calculateMinutesUntilDeparture } from "@/hooks/useStationboard";
+import { useFellenbergstrasse, useAlbisriederDoerfli, calculateMinutesUntilDeparture } from "@/hooks/useStationboard";
 import { useEffect, useState } from "react";
+import { TramFront, Bus } from "lucide-react";
+
+interface Connection {
+  stop: {
+    departure: string;
+    delay: number | null;
+    platform: string | null;
+  };
+  name: string;
+  category: string;
+  number: string;
+  to: string;
+}
+
+const formatDateTime = (date: Date): string => {
+  const day = date.getDate();
+  const month = date.getMonth() + 1;
+  const year = date.getFullYear();
+  const time = date.toLocaleTimeString("de-CH", {
+    hour: "2-digit",
+    minute: "2-digit",
+  });
+  return `${day}.${month}.${year}    ${time}`;
+};
+
+const DateTimeDisplay = ({ currentTime }: { currentTime: Date }) => (
+  <div className="absolute top-[2vh] right-[2vw] text-led-amber-dim font-led text-[2.5vw] md:text-[2vw] lg:text-[1.5vw]">
+    {formatDateTime(currentTime)}
+  </div>
+);
 
 const DepartureRow = ({
   lineNumber,
   destination,
-  platform,
   minutes,
+  category,
 }: {
   lineNumber: string;
   destination: string;
-  platform: string | null;
   minutes: number;
+  category: string;
 }) => {
+  const isTram = category === "Tram" || category === "T";
+  
   return (
-    <div className="flex items-center justify-between w-full px-[2vw] py-[1.5vh]">
+    <div className="flex items-center justify-between w-full px-[2vw] py-[1vh]">
       <div className="flex items-center gap-[2vw]">
-        <span className="text-led-amber font-led text-[6vw] md:text-[5vw] lg:text-[4vw] font-bold min-w-[10vw]">
+        <span className="text-led-amber font-led text-[5vw] md:text-[4vw] lg:text-[3vw] font-bold min-w-[8vw]">
           {lineNumber}
         </span>
-        <div className="flex flex-col">
-          <span className="text-led-amber font-led text-[4vw] md:text-[3.5vw] lg:text-[3vw]">
-            {destination}
-          </span>
-          {platform && (
-            <span className="text-led-amber-dim font-led text-[2vw] md:text-[1.5vw] lg:text-[1.2vw]">
-              Gleis {platform}
-            </span>
-          )}
-        </div>
+        <span className="text-led-amber font-led text-[3.5vw] md:text-[3vw] lg:text-[2.5vw]">
+          {destination}
+        </span>
       </div>
-      <span className="text-led-amber font-led text-[6vw] md:text-[5vw] lg:text-[4vw] font-bold">
-        {minutes}'
-      </span>
+      <div className="text-led-amber font-led text-[5vw] md:text-[4vw] lg:text-[3vw] font-bold min-w-[8vw] text-right">
+        {minutes === 0 ? (
+          isTram ? (
+            <TramFront className="inline-block w-[5vw] md:w-[4vw] lg:w-[3vw] h-[5vw] md:h-[4vw] lg:h-[3vw]" />
+          ) : (
+            <Bus className="inline-block w-[5vw] md:w-[4vw] lg:w-[3vw] h-[5vw] md:h-[4vw] lg:h-[3vw]" />
+          )
+        ) : (
+          <span>{minutes}'</span>
+        )}
+      </div>
     </div>
   );
 };
 
-const LoadingState = () => (
-  <div className="flex items-center justify-center h-full">
-    <span className="text-led-amber font-led text-[4vw] animate-pulse">
-      Lade Daten...
-    </span>
-  </div>
-);
+const StationSection = ({
+  stationName,
+  departures,
+  isLoading,
+  isError,
+}: {
+  stationName: string;
+  departures: Connection[] | undefined;
+  isLoading: boolean;
+  isError: boolean;
+}) => {
+  if (isLoading) {
+    return (
+      <div className="flex-1 flex flex-col px-[2vw] py-[2vh]">
+        <h2 className="text-led-amber font-led text-[3.5vw] md:text-[3vw] lg:text-[2.5vw] mb-[1vh]">
+          {stationName}
+        </h2>
+        <div className="border-b border-amber-900/30 mb-[1vh]" />
+        <div className="flex-1 flex items-center justify-center">
+          <span className="text-led-amber font-led text-[3vw] animate-pulse">
+            Lade Daten...
+          </span>
+        </div>
+      </div>
+    );
+  }
 
-const ErrorState = () => (
-  <div className="flex items-center justify-center h-full">
-    <span className="text-led-amber-dim font-led text-[3vw]">
-      Verbindung fehlgeschlagen
-    </span>
-  </div>
-);
+  if (isError) {
+    return (
+      <div className="flex-1 flex flex-col px-[2vw] py-[2vh]">
+        <h2 className="text-led-amber font-led text-[3.5vw] md:text-[3vw] lg:text-[2.5vw] mb-[1vh]">
+          {stationName}
+        </h2>
+        <div className="border-b border-amber-900/30 mb-[1vh]" />
+        <div className="flex-1 flex items-center justify-center">
+          <span className="text-led-amber-dim font-led text-[2.5vw]">
+            Verbindung fehlgeschlagen
+          </span>
+        </div>
+      </div>
+    );
+  }
 
-const NoDataState = () => (
-  <div className="flex items-center justify-center h-full">
-    <span className="text-led-amber-dim font-led text-[3vw]">
-      Keine Abfahrten
-    </span>
-  </div>
-);
+  if (!departures || departures.length === 0) {
+    return (
+      <div className="flex-1 flex flex-col px-[2vw] py-[2vh]">
+        <h2 className="text-led-amber font-led text-[3.5vw] md:text-[3vw] lg:text-[2.5vw] mb-[1vh]">
+          {stationName}
+        </h2>
+        <div className="border-b border-amber-900/30 mb-[1vh]" />
+        <div className="flex-1 flex items-center justify-center">
+          <span className="text-led-amber-dim font-led text-[2.5vw]">
+            Keine Abfahrten
+          </span>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="flex-1 flex flex-col px-[2vw] py-[2vh]">
+      <h2 className="text-led-amber font-led text-[3.5vw] md:text-[3vw] lg:text-[2.5vw] mb-[1vh]">
+        {stationName}
+      </h2>
+      <div className="border-b border-amber-900/30 mb-[1vh]" />
+      <div className="flex flex-col justify-start">
+        {departures.map((departure, index) => {
+          const minutes = calculateMinutesUntilDeparture(
+            departure.stop.departure,
+            departure.stop.delay
+          );
+
+          return (
+            <DepartureRow
+              key={`${departure.stop.departure}-${index}`}
+              lineNumber={departure.number}
+              destination={departure.to}
+              minutes={minutes}
+              category={departure.category}
+            />
+          );
+        })}
+      </div>
+    </div>
+  );
+};
 
 export const DepartureDisplay = () => {
-  const { data: departures, isLoading, isError } = useStationboard();
+  const fellenbergstrasse = useFellenbergstrasse();
+  const albisriederDoerfli = useAlbisriederDoerfli();
   const [currentTime, setCurrentTime] = useState(new Date());
 
   // Update current time every 10 seconds to recalculate minutes
@@ -73,56 +170,29 @@ export const DepartureDisplay = () => {
     return () => clearInterval(interval);
   }, []);
 
-  if (isLoading) return <LoadingState />;
-  if (isError) return <ErrorState />;
-  if (!departures || departures.length === 0) return <NoDataState />;
-
   return (
-    <div className="flex flex-col w-full h-full">
-      {/* Header */}
-      <div className="px-[2vw] py-[2vh] border-b border-amber-900/30">
-        <h1 className="text-led-amber font-led text-[4vw] md:text-[3vw] lg:text-[2.5vw]">
-          Killwangen-Spreitenbach
-        </h1>
-        <p className="text-led-amber-dim font-led text-[2vw] md:text-[1.5vw] lg:text-[1vw] mt-[0.5vh]">
-          {currentTime.toLocaleTimeString("de-CH", {
-            hour: "2-digit",
-            minute: "2-digit",
-          })}
-        </p>
-      </div>
+    <div className="relative flex flex-col w-full h-full">
+      {/* Date/Time Display */}
+      <DateTimeDisplay currentTime={currentTime} />
 
-      {/* Departures List */}
-      <div className="flex-1 flex flex-col justify-start pt-[2vh]">
-        {departures.map((departure, index) => {
-          const minutes = calculateMinutesUntilDeparture(
-            departure.stop.departure,
-            departure.stop.delay
-          );
+      {/* Fellenbergstrasse Section */}
+      <StationSection
+        stationName="Fellenbergstrasse"
+        departures={fellenbergstrasse.data}
+        isLoading={fellenbergstrasse.isLoading}
+        isError={fellenbergstrasse.isError}
+      />
 
-          // Format line number: S5, S11, etc.
-          const lineNumber = departure.category === "S" 
-            ? `S${departure.number}` 
-            : `${departure.category}${departure.number}`;
+      {/* Divider */}
+      <div className="border-t border-amber-900/50 mx-[2vw]" />
 
-          return (
-            <DepartureRow
-              key={`${departure.stop.departure}-${index}`}
-              lineNumber={lineNumber}
-              destination={departure.to}
-              platform={departure.stop.platform}
-              minutes={minutes}
-            />
-          );
-        })}
-      </div>
-
-      {/* Footer with update indicator */}
-      <div className="px-[2vw] py-[1vh] border-t border-amber-900/30">
-        <p className="text-led-amber-dim font-led text-[1.5vw] md:text-[1vw] lg:text-[0.8vw]">
-          Auto-Update alle 30s
-        </p>
-      </div>
+      {/* Albisriederdörfli Section */}
+      <StationSection
+        stationName="Albisriederdörfli"
+        departures={albisriederDoerfli.data}
+        isLoading={albisriederDoerfli.isLoading}
+        isError={albisriederDoerfli.isError}
+      />
     </div>
   );
 };
