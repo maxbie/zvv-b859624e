@@ -1,6 +1,5 @@
 import { useFellenbergstrasse, useAlbisriederDoerfli, calculateMinutesUntilDeparture } from "@/hooks/useStationboard";
 import { useEffect, useState } from "react";
-import { TramFront, Bus } from "lucide-react";
 
 interface Connection {
   stop: {
@@ -35,39 +34,25 @@ const DepartureRow = ({
   lineNumber,
   destination,
   minutes,
-  category,
 }: {
   lineNumber: string;
   destination: string;
   minutes: number;
-  category: string;
-}) => {
-  const isTram = category === "Tram" || category === "T";
-  
-  return (
-    <div className="flex items-center justify-between w-full px-[2vw] py-[1vh]">
-      <div className="flex items-center gap-[2vw]">
-        <span className="text-led-amber font-led text-[5vw] md:text-[4vw] lg:text-[3vw] font-bold min-w-[8vw]">
-          {lineNumber}
-        </span>
-        <span className="text-led-amber font-led text-[3.5vw] md:text-[3vw] lg:text-[2.5vw]">
-          {destination}
-        </span>
-      </div>
-      <div className="text-led-amber font-led text-[5vw] md:text-[4vw] lg:text-[3vw] font-bold min-w-[8vw] text-right">
-        {minutes === 0 ? (
-          isTram ? (
-            <TramFront className="inline-block w-[5vw] md:w-[4vw] lg:w-[3vw] h-[5vw] md:h-[4vw] lg:h-[3vw]" />
-          ) : (
-            <Bus className="inline-block w-[5vw] md:w-[4vw] lg:w-[3vw] h-[5vw] md:h-[4vw] lg:h-[3vw]" />
-          )
-        ) : (
-          <span>{minutes}'</span>
-        )}
-      </div>
+}) => (
+  <div className="flex items-center justify-between w-full px-[2vw] py-[1vh]">
+    <div className="flex items-center gap-[2vw]">
+      <span className="text-led-amber font-led text-[5vw] md:text-[4vw] lg:text-[3vw] font-bold min-w-[8vw]">
+        {lineNumber}
+      </span>
+      <span className="text-led-amber font-led text-[3.5vw] md:text-[3vw] lg:text-[2.5vw]">
+        {destination}
+      </span>
     </div>
-  );
-};
+    <div className="text-led-amber font-led text-[5vw] md:text-[4vw] lg:text-[3vw] font-bold min-w-[8vw] text-right">
+      {minutes === 0 ? <span>☺</span> : <span>{minutes}'</span>}
+    </div>
+  </div>
+);
 
 const StationSection = ({
   stationName,
@@ -147,7 +132,6 @@ const StationSection = ({
               lineNumber={departure.number}
               destination={departure.to}
               minutes={minutes}
-              category={departure.category}
             />
           );
         })}
