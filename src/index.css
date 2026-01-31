@@ -2,8 +2,13 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Import LED Dot-Matrix font for authentic display look */
-@import url('https://fonts.cdnfonts.com/css/led-dot-matrix');
+/* Nose Transport Font from Cloud Storage */
+@font-face {
+  font-family: 'Nose Transport';
+  src: url('https://xaebzqfxhntheyvkwpqk.supabase.co/storage/v1/object/public/fonts/NoseTransport16-RegularDot.otf') format('opentype');
+  font-weight: 400;
+  font-display: swap;
+}
 
 /* Definition of the design system. All colors, gradients, fonts, etc should be defined here. 
 All colors MUST be HSL.
@@ -108,7 +113,7 @@ All colors MUST be HSL.
 
 /* LED Display specific styles */
 .font-led {
-  font-family: 'LED Dot-Matrix', 'Share Tech Mono', monospace;
+  font-family: 'Nose Transport', monospace;
 }
 
 .text-led-amber {
