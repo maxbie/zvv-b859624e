@@ -1,70 +1,68 @@
 
-
-# Gemischte Liste, korrigiertes Ziel und grössere Schriften
-
-Drei Anpassungen für die Abfahrtsanzeige.
+# Drei Anpassungen für die Abfahrtsanzeige
 
 ---
 
-## Änderung 1: Alle Abfahrten durchmischt anzeigen
+## Änderung 1: 3 Leerschläge zwischen Datum und Uhrzeit
 
-### Aktuell
-- Zwei separate `StationSection`-Blöcke mit Überschriften
-- Trennlinie zwischen den Stationen
-
-### Neu
-- Eine einzige Liste mit allen 6 Abfahrten
-- Sortiert nach Minuten bis zur Abfahrt
-- Keine Stationsüberschriften mehr
-
-**Umsetzung:**
-- `StationSection` Komponente entfernen
-- Neue Logik: beide Datenquellen kombinieren, Minuten berechnen, nach Zeit sortieren
-- `useMemo` für Performance-Optimierung
-
----
-
-## Änderung 2: "Zürich Oerlikon, Bahnhof" statt "Zürich Oerlikon"
-
-### Aktuell (Zeile 48)
+### Aktuell (Zeile 24)
 ```tsx
-{destination.replace(/, Bahnhof Nord$/, "")}
+return `${day}.${month}.${year}    ${time}`;
 ```
-Dies entfernt ", Bahnhof Nord" komplett → Ergebnis: "Zürich Oerlikon"
+Das sind aktuell 4 Leerzeichen.
 
 ### Neu
 ```tsx
-{destination.replace(/ Nord$/, "")}
+return `${day}.${month}.${year}   ${time}`;
 ```
-Dies entfernt nur " Nord" am Ende → Ergebnis: "Zürich Oerlikon, Bahnhof"
+Genau 3 Leerzeichen zwischen Datum und Uhrzeit.
 
 ---
 
-## Änderung 3: Alle Schriftgrössen verdoppeln
+## Änderung 2: Dynamischer Zeilenabstand für 4:3-Format
 
-### Aktuelle Grössen → Neue Grössen
+### Aktuell (Zeile 42)
+```tsx
+<div className="flex items-center justify-between w-full px-[2vw] py-[1vh]">
+```
+Fester Zeilenabstand von `1vh`.
 
-| Element | Aktuell | Neu (×2) |
-|---------|---------|----------|
-| Datum/Zeit | `text-[2.5vw] md:text-[2vw] lg:text-[1.5vw]` | `text-[5vw] md:text-[4vw] lg:text-[3vw]` |
-| Liniennummer | `text-[5vw] md:text-[4vw] lg:text-[3vw]` | `text-[10vw] md:text-[8vw] lg:text-[6vw]` |
-| Ziel | `text-[3.5vw] md:text-[3vw] lg:text-[2.5vw]` | `text-[7vw] md:text-[6vw] lg:text-[5vw]` |
-| Minuten | `text-[5vw] md:text-[4vw] lg:text-[3vw]` | `text-[10vw] md:text-[8vw] lg:text-[6vw]` |
+### Neu
+Für ein 4:3-Format mit 5 Einträgen nutzen wir `justify-between` auf dem Container, damit die Zeilen gleichmässig über die verfügbare Höhe verteilt werden:
+
+```tsx
+// Container (Zeile 125)
+<div className="flex flex-col justify-between h-full">
+
+// DepartureRow (Zeile 42)
+<div className="flex items-center justify-between w-full px-[2vw]">
+```
+
+So wird der vertikale Abstand automatisch berechnet und die 5 Zeilen füllen den verfügbaren Platz optimal aus.
+
+---
+
+## Änderung 3: Nur 5 Einträge anzeigen
+
+### Aktuell (Zeile 126)
+```tsx
+{allDepartures.map((departure, index) => (
+```
+Zeigt alle Abfahrten an (bis zu 6).
+
+### Neu
+```tsx
+{allDepartures.slice(0, 5).map((departure, index) => (
+```
+Begrenzt auf die ersten 5 Einträge.
 
 ---
 
 ## Zusammenfassung der Code-Änderungen
 
-### src/components/DepartureDisplay.tsx
-
-1. **Import hinzufügen:** `useMemo` von React
-2. **StationSection entfernen:** Komplette Komponente (Zeilen 57-141)
-3. **DepartureRow anpassen:**
-   - Schriftgrössen verdoppeln
-   - Replace-Pattern korrigieren: `/ Nord$/` statt `/, Bahnhof Nord$/`
-4. **DateTimeDisplay:** Schriftgrössen verdoppeln
-5. **DepartureDisplay neu strukturieren:**
-   - Daten kombinieren und sortieren mit `useMemo`
-   - Eine flache Liste statt zwei Sections
-   - Trennlinie entfernen
-
+| Zeile | Was | Änderung |
+|-------|-----|----------|
+| 24 | formatDateTime | 4 → 3 Leerzeichen |
+| 42 | DepartureRow | `py-[1vh]` entfernen |
+| 125 | Container | `justify-between h-full` hinzufügen |
+| 126 | map | `.slice(0, 5)` hinzufügen |
