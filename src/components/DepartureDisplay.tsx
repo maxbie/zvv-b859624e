@@ -24,6 +24,12 @@ const formatDateTime = (date: Date): string => {
   return `${day}.${month}.${year}   ${time}`;
 };
 
+const RefreshInfo = () => (
+  <div className="absolute top-[2vh] left-[2vw] text-led-amber-dim font-led text-[5vw] md:text-[4vw] lg:text-[3vw] whitespace-nowrap">
+    Aktualisierung alle 30s
+  </div>
+);
+
 const DateTimeDisplay = ({ currentTime }: { currentTime: Date }) => (
   <div className="absolute top-[2vh] right-[2vw] text-led-amber-dim font-led text-[5vw] md:text-[4vw] lg:text-[3vw] whitespace-nowrap">
     {formatDateTime(currentTime)}
@@ -98,6 +104,9 @@ export const DepartureDisplay = () => {
 
   return (
     <div className="relative flex flex-col w-full h-full">
+      {/* Refresh Info */}
+      <RefreshInfo />
+
       {/* Date/Time Display */}
       <DateTimeDisplay currentTime={currentTime} />
 
